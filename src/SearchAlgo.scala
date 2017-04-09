@@ -8,6 +8,11 @@ class SearchAlgo(val initField: Field, val endField: Field) {
     lazy val f: Int = depth + h
 
     override def toString: String = s"depth = $depth\nField:\n$field"
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case s: State => field == s.field
+      case _ => super.equals(obj)
+    }
   }
 
   implicit val evristic: Evristic = f => {
@@ -27,16 +32,25 @@ class SearchAlgo(val initField: Field, val endField: Field) {
     do {
       i += 1
       val head = open.dequeue()
-      println(s"i = $i head:\n${head.field}")
-      if (head.field.horses.toSet == endField.horses.toSet) result = Some(head)
-      else {
-        checked = checked + head
-        val not = getNextsSorted(head).filterNot(checked.contains)
-        println(s"next:\n${not.mkString("\n")}")
-        open ++= not
+      if (!checked.exists(_.field == head.field)) {
+        if (head.field.horses.toSet == endField.horses.toSet) result = Some(head)
+        else {
+          println(s"i = $i head:\n${head.field}")
+          checked = checked + head
+          val not = getNextsSorted(head).filterNot(checked.contains)
+//          println(s"next:\n${not.mkString("\n")}")
+          open ++= not
+        }
+      } else {
+        println("skip")
       }
     } while (result.isEmpty && open.nonEmpty)
     result
+  }
+
+  def test = {
+    val state = State(None, 0, endField)
+    println(state == State(Some(state), 1, endField))
   }
 
   private def getNextsSorted(state: State): List[State] = {

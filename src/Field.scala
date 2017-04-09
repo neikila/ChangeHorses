@@ -13,7 +13,7 @@ case class Field(size: Point, horses: List[Horse]) {
   def hasConflict: Boolean = horses.zipWithIndex.toStream.exists { case (h, index) =>
     val possible = h.allNextPos.filter(_.isInside)
     val rest = horses.drop(index + 1)
-    possible.exists(pos => rest.exists(_.pos == pos))
+    possible.exists(pos => rest.exists(h2 => h2.pos == pos && h2.color != h.color))
   }
 
   implicit class PointInField(p: Point) {
@@ -30,6 +30,11 @@ case class Field(size: Point, horses: List[Horse]) {
       case _ => "_"
     }
     strings.sliding(3, 3).map(_.mkString).mkString("\n")
+  }
+
+  override def equals(obj: scala.Any): Boolean = obj match {
+    case f: Field => f.horses.toSet == horses.toSet
+    case _ => super.equals(obj)
   }
 
   private def colorStr(color: Color): String = if (color == Colors.White) "w" else "b"
